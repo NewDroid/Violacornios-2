@@ -7,49 +7,80 @@ public class Disparar : MonoBehaviour {
     RaycastHit hit;
     public Transform puntoDisparo;
 
-    //Variables disparo
+    //Variables disparo constantes(dependen del arma pero una vez estableciadas no cambian a no ser que se cambie de arma)
     //TODO : Encargate de cambiar los valores con tu administrador de armas
-    int dañosSegundo = 1; //Cuantas veces hace el daño por segundo
-    float tiempoDisparo = 1f;
+    float dañosSegundo = 8; //Cuantas veces hace el daño por segundo
+    float tiempoDisparo = 0.3f;
     float distanciaMax = 200f; //unidades para el raycast
     int daño = 1; //En puntos de vida, ya hare la clase pambi para controlar todo eso
-    bool laser = true;
+    bool laser = false;//Es un laser o son balas?
+    bool arcoiris = true; //El laser sera arcoiris? :3
+    public GameObject bala;
+    bool auto;//Es automatica?
+    int balasPorCargador = 5;//Cuantas balas caben en un cargador
+    float tiempoRecarga = 2.5f;//Cuanto tarda en recargar
+    float maximoSobrecalentamiento = 3f; //El maximo antes de que haga bum
 
-    public bool arcoiris;
-
+    float dañosSegundoActual;
     float tiempoDesdeDisparo;
-
     float tiempoDesdeDaño;
+    int balasEnCargador;
+
+    float sobrecaletamiento;
 
     public ParticleSystem particulasLaser;
 
-    public int raycast;
+    private int raycast;
+
+    private LineRenderer lineRenderer; //El renderer de los disparos
 
     void Start()
     {
-        if (arcoiris)
+        lineRenderer = GetComponent<LineRenderer>();
+
+        if (arcoiris && laser)
         {
             StartCoroutine(Arcoiris());
         }
+
+        if (laser)
+        {
+            StartCoroutine(Emit());
+        }
+
+        balasEnCargador = balasPorCargador;
+    }
+
+    IEnumerator Emit()
+    {
+        while (true)
+        {
+            particulasLaser.Play();
+            yield return new WaitForSeconds(25f);
+        }
+    }
+
+    IEnumerator Recargar()
+    {
+        Debug.Log("Recargando...");
+
+        yield return new WaitForSeconds(tiempoRecarga);
+        balasEnCargador = balasPorCargador;
     }
 
     IEnumerator Arcoiris()
     {
         while (true)
         {
-            Color colorRandom = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1f);
-            Color colorRandom2 = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1f);
-
-            particulasLaser.startColor = colorRandom;
-            GetComponent<LineRenderer>().SetColors(colorRandom, colorRandom2);
+            Color[] coloresRandom = { new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1f), new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1f) , new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1f) , new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1f) };
+            particulasLaser.startColor = coloresRandom[Random.Range(0, 4)];
+            lineRenderer.SetColors(coloresRandom[Random.Range(0, 4)], coloresRandom[Random.Range(0, 4)]);
             yield return null;
         }
     }
 
-    void Update ()
+    void Update()
     {
-
-        tiempoDesdeDisparo += Time.deltaTime;
         tiempoDesdeDaño += Time.deltaTime;
 
         raycast = 1 << 8;
@@ -57,19 +88,29 @@ public class Disparar : MonoBehaviour {
 
         if (laser)
         {
-                if (Input.GetMouseButton(0))
+            particulasLaser.enableEmission = true;
+            if (Input.GetMouseButton(0))
+            {
+                particulasLaser.transform.localPosition = new Vector3(0.412f, particulasLaser.transform.localPosition.y, particulasLaser.transform.localPosition.z);
+
+                dañosSegundoActual = dañosSegundo - (dañosSegundo * (1 + (sobrecaletamiento - maximoSobrecalentamiento)/maximoSobrecalentamiento));
+
+                sobrecaletamiento += Time.deltaTime;
+
+                if(sobrecaletamiento >= 1)
                 {
-                particulasLaser.transform.localPosition = new Vector3(particulasLaser.transform.localPosition.x, particulasLaser.transform.localPosition.y, 0f);
-                    if (Physics.Raycast(puntoDisparo.position, puntoDisparo.forward, out hit, distanciaMax, raycast))
-                    {
-                    Debug.Log(hit.transform.gameObject);
+                    Application.Quit();
+                }
 
-                        GetComponent<LineRenderer>().SetPosition(0, puntoDisparo.position);
-                        GetComponent<LineRenderer>().SetPosition(1, hit.point);
+                if (Physics.Raycast(puntoDisparo.position, puntoDisparo.forward, out hit, distanciaMax, raycast))
+                {
 
-                        IDañable dañable = (IDañable)hit.transform.GetComponent(typeof(IDañable));
+                    lineRenderer.SetPosition(0, puntoDisparo.position);
+                    lineRenderer.SetPosition(1, hit.point);
 
-                    if (dañable != null && tiempoDesdeDaño > 1 / dañosSegundo)
+                    IDañable dañable = (IDañable)hit.transform.GetComponent(typeof(IDañable));
+
+                    if (dañable != null && tiempoDesdeDaño > 1 / dañosSegundoActual)
                     {
                         dañable.Daño(daño);
                         tiempoDesdeDaño = 0;
@@ -77,16 +118,79 @@ public class Disparar : MonoBehaviour {
                 }
                 else
                 {
-                    GetComponent<LineRenderer>().SetPosition(0, puntoDisparo.position);
-                    GetComponent<LineRenderer>().SetPosition(1, puntoDisparo.forward * 1000000);                   
+                    lineRenderer.SetPosition(0, puntoDisparo.position);
+                    lineRenderer.SetPosition(1, puntoDisparo.forward * 1000000);
                 }
-                }
+            }
             else
             {
-                GetComponent<LineRenderer>().SetPosition(0, Vector3.zero);
-                GetComponent<LineRenderer>().SetPosition(1, Vector3.zero);
-                particulasLaser.transform.localPosition = new Vector3(particulasLaser.transform.localPosition.x, particulasLaser.transform.localPosition.y, -1000f);
+                sobrecaletamiento -= Time.deltaTime;
+
+                if (sobrecaletamiento < 0)
+                    sobrecaletamiento = 0;
+
+                lineRenderer.SetPosition(0, Vector3.zero);
+                lineRenderer.SetPosition(1, Vector3.zero);
+                particulasLaser.transform.localPosition = new Vector3(-10000f, particulasLaser.transform.localPosition.y, particulasLaser.transform.localPosition.z);
             }
         }
-    }     
+        else
+        {
+            particulasLaser.enableEmission = false;
+            if (balasEnCargador > 0)
+            {
+
+                tiempoDesdeDisparo += Time.deltaTime;
+
+                if (auto)
+                {
+                    if (Input.GetMouseButton(0))
+                    {
+                        if (tiempoDesdeDisparo >= tiempoDisparo)
+                        {
+                            tiempoDesdeDisparo = 0f;
+                            Instantiate(bala, puntoDisparo.position, puntoDisparo.transform.rotation);
+
+                            balasEnCargador--;
+
+                            if (Physics.Raycast(puntoDisparo.position, puntoDisparo.forward, out hit, distanciaMax, raycast))
+                            {
+                                IDañable dañable = (IDañable)hit.transform.GetComponent(typeof(IDañable));
+
+                                if (dañable != null)
+                                {
+                                    dañable.Daño(daño);
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if (Input.GetMouseButtonDown(0))
+                    {
+                        if (tiempoDesdeDisparo >= tiempoDisparo)
+                        {
+                            tiempoDesdeDisparo = 0f;
+                            Instantiate(bala, puntoDisparo.position, puntoDisparo.transform.rotation);
+
+                            balasEnCargador--;
+
+                            if (Physics.Raycast(puntoDisparo.position, puntoDisparo.forward, out hit, distanciaMax, raycast))
+                            {
+                                IDañable dañable = (IDañable)hit.transform.GetComponent(typeof(IDañable));
+
+                                if (dañable != null)
+                                {
+                                    dañable.Daño(daño);
+                                }
+                            }
+                        }
+                    }
+                }
+                if (balasEnCargador == 0)
+                    StartCoroutine(Recargar());
+            }
+        }
+    }   
 }
