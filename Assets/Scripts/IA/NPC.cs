@@ -40,7 +40,7 @@ namespace Violacornios
 
         public void Morir()
         {
-            throw new NotImplementedException();
+            
         }
 
         protected void Start()

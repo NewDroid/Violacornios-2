@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Disparar : MonoBehaviour {
+public class Disparar : MonoBehaviour, IDañable {
 
     //Cosos para el raycast
     RaycastHit hit;
@@ -19,20 +19,22 @@ public class Disparar : MonoBehaviour {
     bool auto;//Es automatica?
     int balasPorCargador = 5;//Cuantas balas caben en un cargador
     float tiempoRecarga = 2.5f;//Cuanto tarda en recargar
-    float maximoSobrecalentamiento = 3f; //El maximo antes de que haga bum
+    float maximoSobrecalentamiento = 10f; //El maximo antes de que haga bum
 
     float dañosSegundoActual;
     float tiempoDesdeDisparo;
     float tiempoDesdeDaño;
     int balasEnCargador;
 
-    float sobrecaletamiento;
+    float sobrecalentamiento, tsobrecalentamiento;
 
     public ParticleSystem particulasLaser;
 
     private int raycast;
 
     private LineRenderer lineRenderer; //El renderer de los disparos
+
+    public ParticleSystem explosion;
 
     void Start()
     {
@@ -94,13 +96,17 @@ public class Disparar : MonoBehaviour {
             {
                 particulasLaser.transform.localPosition = new Vector3(0.412f, particulasLaser.transform.localPosition.y, particulasLaser.transform.localPosition.z);
 
-                dañosSegundoActual = dañosSegundo - (dañosSegundo * (1 + (sobrecaletamiento - maximoSobrecalentamiento)/maximoSobrecalentamiento));
+                dañosSegundoActual = dañosSegundo - (dañosSegundo * (1 + (tsobrecalentamiento - maximoSobrecalentamiento)/maximoSobrecalentamiento));
 
-                sobrecaletamiento += Time.deltaTime;
+                tsobrecalentamiento += Time.deltaTime;
+                sobrecalentamiento = tsobrecalentamiento / maximoSobrecalentamiento;
 
-                if(sobrecaletamiento >= 1)
+                Debug.Log("Sobrecalentamiento : " + sobrecalentamiento + " | D/s : " + dañosSegundoActual);
+
+                if(sobrecalentamiento >= 1)
                 {
-                    Application.Quit();
+                    Debug.Log("BOOOOOM");
+                    Morir();
                 }
 
                 if (Physics.Raycast(puntoDisparo.position, puntoDisparo.forward, out hit, distanciaMax, raycast))
@@ -109,7 +115,7 @@ public class Disparar : MonoBehaviour {
                     lineRenderer.SetPosition(0, puntoDisparo.position);
                     lineRenderer.SetPosition(1, hit.point);
 
-                    IDañable dañable = (IDañable)hit.transform.GetComponent(typeof(IDañable));
+                    IDañable dañable = hit.transform.GetComponent<IDañable>();
 
                     if (dañable != null && tiempoDesdeDaño > 1 / dañosSegundoActual)
                     {
@@ -125,10 +131,12 @@ public class Disparar : MonoBehaviour {
             }
             else
             {
-                sobrecaletamiento -= Time.deltaTime;
+                tsobrecalentamiento -= Time.deltaTime * 2;
 
-                if (sobrecaletamiento < 0)
-                    sobrecaletamiento = 0;
+                if (tsobrecalentamiento < 0)
+                    tsobrecalentamiento = 0;
+
+                sobrecalentamiento = tsobrecalentamiento / maximoSobrecalentamiento;
 
                 lineRenderer.SetPosition(0, Vector3.zero);
                 lineRenderer.SetPosition(1, Vector3.zero);
@@ -193,5 +201,15 @@ public class Disparar : MonoBehaviour {
                     StartCoroutine(Recargar());
             }
         }
-    }   
+    }
+
+    public void Daño(int puntos)
+    {
+        
+    }
+
+    public void Morir()
+    {
+        explosion.Play();
+    }
 }
