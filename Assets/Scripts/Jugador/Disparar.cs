@@ -13,7 +13,7 @@ public class Disparar : MonoBehaviour {
     float tiempoDisparo = 0.3f;
     float distanciaMax = 200f; //unidades para el raycast
     int daño = 1; //En puntos de vida, ya hare la clase pambi para controlar todo eso
-    bool laser = false;//Es un laser o son balas?
+    bool laser = true;//Es un laser o son balas?
     bool arcoiris = true; //El laser sera arcoiris? :3
     public GameObject bala;
     bool auto;//Es automatica?
@@ -36,6 +36,7 @@ public class Disparar : MonoBehaviour {
 
     void Start()
     {
+
         lineRenderer = GetComponent<LineRenderer>();
 
         if (arcoiris && laser)
