@@ -17,6 +17,8 @@ namespace Violacornios
 
         public static administrador instancia;
 
+        public ListaArmas listaArmas;
+
         void Awake()
         {
             if (instancia == null)
