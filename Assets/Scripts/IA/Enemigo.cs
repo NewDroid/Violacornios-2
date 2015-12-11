@@ -37,7 +37,7 @@ namespace Violacornios
             contadorTiempo = tiempoDecision / duracionCorutina;
         }
 
-        protected Vector3 ultimaPosicion;
+        protected Vector3 ultimaPosicion, ultimaPosicionIA;
 
         public float rangoDarVueltas;
         public float tiempoDecision;
@@ -51,8 +51,6 @@ namespace Violacornios
         {        
             while (estado != Estado.Muerto)
             {
-                Debug.Log(vida);
-
                 if (vida <= 0)
                     Morir();
 
@@ -61,6 +59,8 @@ namespace Violacornios
 
                 if (estado == Estado.Buscando)
                 {
+                    nv.Resume();
+
                     nv.destination = ultimaPosicion;
               
                     if (Physics.Raycast(ray, out hit, distanciaDeteccion, capaEnemigo))
@@ -73,12 +73,19 @@ namespace Violacornios
 
                     if (transform.position.x == ultimaPosicion.x && transform.position.z == ultimaPosicion.z)
                     {
-                        estado = Estado.DandoVueltas;
+                        DarVueltas();
                     }
+                    /*else if (Vector3.Distance(transform.position, ultimaPosicionIA) < 0.03f)
+                    {
+                        DarVueltas();
+                    }
+                    */
                 }
                 if (estado == Estado.DandoVueltas)
                 {
-                    if(contadorTiempo >= tiempoDecision/duracionCorutina || transform.position == nv.destination)
+                    nv.Resume();
+
+                    if (contadorTiempo >= tiempoDecision/duracionCorutina || transform.position == nv.destination)
                     {
                         Vector3 aleatorio = new Vector3(Random.Range(-rangoDarVueltas, rangoDarVueltas), 0, Random.Range(-rangoDarVueltas, rangoDarVueltas));
 
@@ -103,16 +110,30 @@ namespace Violacornios
 
                     if (Physics.Raycast(ray, out hit, distanciaDeteccion, capaEnemigo))
                     {
-                        if (hit.transform.tag == "Player")
+                        if (hit.transform.tag != "Player")
                         {
-                            estado = Estado.Persiguiendo;
-                        }else estado = Estado.Buscando;
+                            nv.Stop();
+                            estado = Estado.Buscando;
+                        }
                     }
                     else estado = Estado.Buscando;
                 }
+                ultimaPosicionIA = transform.position;
                 yield return new WaitForSeconds(duracionCorutina);
             }
             Morir();
+        }
+
+        void DarVueltas()
+        {
+            nv.Stop();
+
+            Vector3 aleatorio = new Vector3(Random.Range(-rangoDarVueltas, rangoDarVueltas), 0, Random.Range(-rangoDarVueltas, rangoDarVueltas));
+
+            nv.destination = posicionInicial + aleatorio.normalized * rangoDarVueltas * Random.Range(5, 11) / 10;
+            contadorTiempo = 0;
+
+            estado = Estado.DandoVueltas;
         }
 
         new void Morir()
