@@ -75,11 +75,6 @@ namespace Violacornios
                     {
                         DarVueltas();
                     }
-                    /*else if (Vector3.Distance(transform.position, ultimaPosicionIA) < 0.03f)
-                    {
-                        DarVueltas();
-                    }
-                    */
                 }
                 if (estado == Estado.DandoVueltas)
                 {
@@ -105,7 +100,7 @@ namespace Violacornios
                 }
                 if (estado == Estado.Persiguiendo)
                 {
-                    nv.destination = player.transform.position;
+                    nv.SetDestination(player.transform.position);
                     ultimaPosicion = player.transform.position;
 
                     if (Physics.Raycast(ray, out hit, distanciaDeteccion, capaEnemigo))

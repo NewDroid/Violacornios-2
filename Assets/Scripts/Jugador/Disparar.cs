@@ -101,7 +101,7 @@ public class Disparar : MonoBehaviour, IDañable {
                 tsobrecalentamiento += Time.deltaTime;
                 sobrecalentamiento = tsobrecalentamiento / maximoSobrecalentamiento;
 
-                Debug.Log("Sobrecalentamiento : " + sobrecalentamiento + " | D/s : " + dañosSegundoActual);
+                //Debug.Log("Sobrecalentamiento : " + sobrecalentamiento + " | D/s : " + dañosSegundoActual);
 
                 if(sobrecalentamiento >= 1)
                 {

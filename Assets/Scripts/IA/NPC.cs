@@ -36,6 +36,8 @@ namespace Violacornios
             {
                 vida -= puntos;
             }
+
+            Debug.Log(vida);
         }
 
         public void Morir()
