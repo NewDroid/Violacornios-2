@@ -4,7 +4,7 @@ using System.Collections;
 public class admistradorArmas : MonoBehaviour 
 {
 	public GameObject[] armas;
-	public AudioClip audio;
+	public AudioClip audioclip;
 	public bool[] armasActivas;
 	public string animacionCambiar;
 	public int armaActal;
@@ -45,7 +45,7 @@ public class admistradorArmas : MonoBehaviour
 	
 	IEnumerator cambio()
 	{
-		GetComponent<AudioSource>().PlayOneShot(audio);
+		GetComponent<AudioSource>().PlayOneShot(audioclip);
 		yield return new WaitForSeconds(0.5f);
 		armas[0].SetActive(false);
 		armas[1].SetActive(false);

@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+using UnityEngine.SceneManagement;
+
 namespace Violacornios
 {
 
@@ -10,7 +12,7 @@ namespace Violacornios
         public GameObject jugador;
         public GameObject meniu;
 
-        public AudioClip audio;
+        public AudioClip audioclip;
 
         public string reiniciarString;
         public string menuString;
@@ -23,14 +25,14 @@ namespace Violacornios
 
         public void reiniciar()
         {
-            Application.LoadLevel(reiniciarString);
+            SceneManager.LoadScene(reiniciarString);
         }
 
         public void revivir()
         {
             if (administreitor.GetComponent<administrador>().dinero <= administreitor.GetComponent<administrador>().dineroRevivir - 1)
             {
-                GetComponent<AudioSource>().PlayOneShot(audio);
+                GetComponent<AudioSource>().PlayOneShot(audioclip);
             }
             else
             {
@@ -43,7 +45,7 @@ namespace Violacornios
 
         public void menu()
         {
-            Application.LoadLevel(menuString);
+            SceneManager.LoadScene(menuString);
         }
 
         public void salir()

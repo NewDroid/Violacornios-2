@@ -19,6 +19,8 @@ namespace Violacornios
 
         public ListaArmas listaArmas;
 
+        public VCConsole vcconsole;
+
         void Awake()
         {
             if (instancia == null)

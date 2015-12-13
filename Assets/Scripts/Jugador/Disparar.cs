@@ -91,7 +91,7 @@ public class Disparar : MonoBehaviour, IDañable {
 
         if (laser)
         {
-            particulasLaser.enableEmission = true;
+            particulasLaser.Play();
             if (Input.GetMouseButton(0))
             {
                 particulasLaser.transform.localPosition = new Vector3(0.412f, particulasLaser.transform.localPosition.y, particulasLaser.transform.localPosition.z);
@@ -145,7 +145,7 @@ public class Disparar : MonoBehaviour, IDañable {
         }
         else
         {
-            particulasLaser.enableEmission = false;
+            particulasLaser.Stop();
             if (balasEnCargador > 0)
             {
 

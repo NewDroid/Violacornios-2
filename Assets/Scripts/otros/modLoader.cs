@@ -2,22 +2,53 @@
 using System.Collections;
 using System.Reflection;
 using System;
+using System.IO;
 
-public class modLoader : MonoBehaviour
+namespace Violacornios
 {
-
-	void Awake()
+    public class modLoader : MonoBehaviour
     {
-        Assembly mod = Assembly.LoadFrom("c:\\Users\\oscar\\Documents\\Violacornios-2\\Assets\\PruebaMods.dll");
-        Type t = mod.GetType("PruebaMods.Prueba");
 
-        object instance = Activator.CreateInstance(t);
+        void Awake()
+        {
+            try {
+                string[] mods = Directory.GetFiles(Application.persistentDataPath + "\\mods");
 
-        Debug.Log(instance.GetType());
+                Debug.Log(mods[0]);
 
-        MethodInfo method = t.GetMethod("Run");
+                foreach(string mod in mods)
+                {
+                    try {
+                        Assembly modAssembly = Assembly.LoadFrom(mod);
+                        string[] modSplitted = mod.Split('\\');
+                        Debug.Log(modSplitted[modSplitted.Length - 1]);
 
-        Debug.Log(method);
-        method.Invoke(instance, null);
+                        string finalName = modSplitted[modSplitted.Length - 1].Split('.')[0];
+
+                        Type t = modAssembly.GetType(finalName + "." + finalName);
+
+                        Debug.Log(t);
+
+                        try {
+                            object instance = Activator.CreateInstance(t);
+
+                            try {
+                                MethodInfo method = t.GetMethod("Initialize");
+                                administrador.instancia.vcconsole.cprint("Initialized mod " + modAssembly.FullName + ".");
+                                method.Invoke(instance, null);
+                            }
+                            catch { administrador.instancia.vcconsole.cprint("Mod " + modAssembly.GetName() + " doesnt have a Initialize method"); }
+                        }
+                        catch { administrador.instancia.vcconsole.cprint("Mod " + modAssembly.GetName() + " has a invalid name. \n Remember that the class name must be the same that the namespace and .dll file"); }
+                    }
+                    catch
+                    {
+                        administrador.instancia.vcconsole.cprint("Mod " + mod + " cannot be loaded");
+                    }
+                }
+
+            }
+            catch { }
+        }
     }
 }

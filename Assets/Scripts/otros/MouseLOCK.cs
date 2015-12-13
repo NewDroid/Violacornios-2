@@ -6,6 +6,6 @@ public class MouseLOCK : MonoBehaviour
 	void Update()
 	{
 		Cursor.visible = false;
-		Screen.lockCursor = true;
+        Cursor.lockState = CursorLockMode.Locked;
 	}
 }

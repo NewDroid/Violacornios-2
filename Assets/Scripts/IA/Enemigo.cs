@@ -21,7 +21,7 @@ namespace Violacornios
 
         protected Vector3 posicionInicial;
 
-        void Start()
+        public override void Start()
         {
             base.Start();
 

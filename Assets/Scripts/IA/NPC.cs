@@ -45,7 +45,7 @@ namespace Violacornios
             
         }
 
-        protected void Start()
+        public virtual void Start()
         {
             nv = GetComponent<NavMeshAgent>();
             player = GameObject.Find("Jugador");
